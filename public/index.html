@@ -174,10 +174,10 @@
     <div class="container">
         <div class="controls">
             <h3>Período de visualización</h3>
-            <button onclick="updateCharts(1)" class="active" id="btn-1h">1 Hora</button>
-            <button onclick="updateCharts(6)" id="btn-6h">6 Horas</button>
-            <button onclick="updateCharts(24)" id="btn-24h">24 Horas</button>
-            <button onclick="updateCharts(168)" id="btn-7d">7 Días</button>
+            <button data-hours="1" class="active time-btn" id="btn-1h">1 Hora</button>
+            <button data-hours="6" class="time-btn" id="btn-6h">6 Horas</button>
+            <button data-hours="24" class="time-btn" id="btn-24h">24 Horas</button>
+            <button data-hours="168" class="time-btn" id="btn-7d">7 Días</button>
         </div>
 
         <div class="stats-grid">
@@ -250,10 +250,21 @@
             initializeCharts();
             initializeWebSocket();
             loadInitialData();
+            setupEventListeners();
             
             // Actualizar datos cada 30 segundos
             setInterval(loadCurrentData, 30000);
         });
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            document.querySelectorAll('.time-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const hours = parseInt(this.dataset.hours);
+                    updateCharts(hours);
+                });
+            });
+        }
 
         function initializeWebSocket() {
             socket = io();

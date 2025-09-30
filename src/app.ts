@@ -53,8 +53,27 @@ class App {
   }
 
   private initializeMiddlewares(): void {
-    // Middleware de seguridad
-    this.app.use(helmet());
+    // Middleware de seguridad con CSP personalizada para permitir CDNs
+    this.app.use(helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            "https://cdn.jsdelivr.net",
+            "https://cdn.socket.io"
+          ],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "ws:", "wss:"],
+          fontSrc: ["'self'", "https:", "data:"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+        },
+      },
+    }));
     
     // Compresión
     this.app.use(compression());
