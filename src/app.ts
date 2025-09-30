@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -6,7 +6,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import * as dotenv from 'dotenv';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 // Importar configuración y rutas
 import { initializeDatabase } from './config/database';
@@ -67,7 +67,7 @@ class App {
     this.app.use(express.urlencoded({ extended: true }));
 
     // Middleware para logging de requests
-    this.app.use((req, res, next) => {
+    this.app.use((req: Request, res: Response, next: NextFunction) => {
       console.log(`🔍 ${new Date().toISOString()} - ${req.method} ${req.path}`);
       next();
     });
@@ -75,7 +75,7 @@ class App {
 
   private initializeRoutes(): void {
     // Ruta de salud
-    this.app.get('/health', (req, res) => {
+    this.app.get('/health', (req: Request, res: Response) => {
       res.json({
         status: 'OK',
         timestamp: new Date().toISOString(),
@@ -85,7 +85,7 @@ class App {
     });
 
     // Ruta principal
-    this.app.get('/', (req, res) => {
+    this.app.get('/', (req: Request, res: Response) => {
       res.json({
         message: 'Backend Sistema de Semáforos - API v1.0',
         documentation: '/api-docs',
@@ -108,7 +108,7 @@ class App {
 
   private initializeErrorHandling(): void {
     // Manejo de rutas no encontradas
-    this.app.use('*', (req, res) => {
+    this.app.use('*', (req: Request, res: Response) => {
       res.status(404).json({
         error: 'Ruta no encontrada',
         path: req.originalUrl,
@@ -118,7 +118,7 @@ class App {
     });
 
     // Manejo global de errores
-    this.app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    this.app.use((err: any, req: Request, res: Response, next: NextFunction) => {
       console.error('❌ Error no manejado:', err);
       
       res.status(err.status || 500).json({
@@ -130,7 +130,7 @@ class App {
   }
 
   private initializeWebSocket(): void {
-    this.io.on('connection', (socket) => {
+    this.io.on('connection', (socket: Socket) => {
       console.log('🔌 Cliente conectado via WebSocket:', socket.id);
 
       socket.on('subscribe-sensors', () => {
