@@ -2,11 +2,27 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
-import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import * as dotenv from 'dotenv';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
+
+// Imports usando require para evitar problemas de tipos
+const morgan = require('morgan');
+const { Server } = require('socket.io');
+
+// Tipos para Socket.IO
+interface SocketIOServer {
+  on(event: string, callback: (socket: any) => void): void;
+  to(room: string): {
+    emit(event: string, data: any): void;
+  };
+}
+
+interface SocketInstance {
+  id: string;
+  on(event: string, callback: () => void): void;
+  join(room: string): void;
+}
 
 // Importar configuración y rutas
 import { initializeDatabase } from './config/database';
@@ -18,7 +34,7 @@ dotenv.config();
 class App {
   public app: express.Application;
   public server: any;
-  public io: Server;
+  public io: SocketIOServer;
 
   constructor() {
     this.app = express();
@@ -28,7 +44,7 @@ class App {
         origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
         methods: ['GET', 'POST']
       }
-    });
+    }) as SocketIOServer;
 
     this.initializeMiddlewares();
     this.initializeRoutes();
@@ -130,7 +146,7 @@ class App {
   }
 
   private initializeWebSocket(): void {
-    this.io.on('connection', (socket: Socket) => {
+    this.io.on('connection', (socket: SocketInstance) => {
       console.log('🔌 Cliente conectado via WebSocket:', socket.id);
 
       socket.on('subscribe-sensors', () => {
